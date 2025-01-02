@@ -5,14 +5,15 @@ from sklearn.model_selection import train_test_split
 class Custom_LSTM:
     def __init__(self):
         self.model = None
-        self.c_x = None
-        self.c_y = None
         self.c_x_train = None
         self.c_y_train = None
         self.c_x_test = None
         self.c_y_test = None
-        self.c_model_statistics = None
-        self.c_model_scores = None
+        self.c_model_statistics_train = list()
+        self.c_model_statistics_test = list()
+        self.c_model_scores_train = list()
+        self.c_model_scores_test = list()
+        self.c_predicts = list()
     
 
     def build_model(self, c_layers_number=1, c_units_number=16, c_dropout_rate=0.1, c_input_shape=(16, 1)):
@@ -51,10 +52,7 @@ class Custom_LSTM:
         self.model.compile(optimizer=c_optimizer, loss=c_loss, metrics=c_metrics)
 
 
-    def fit_model(self, c_x, c_y, c_test_size=0.3, c_random_state=42, c_epochs_number=25, c_batches_number=32, c_verbose=0):
-        self.c_x = c_x
-        self.c_y = c_y
-
+    def fit_model(self, c_x, c_y, c_test_size=0.3, c_random_state=42, c_epochs_number=100, c_batches_number=64, c_verbose=0):
         x_train, x_test, y_train, y_test = train_test_split(c_x, c_y, test_size=c_test_size, random_state=c_random_state)
 
         self.c_x_train = x_train
@@ -65,10 +63,14 @@ class Custom_LSTM:
 
         model_fitted = self.model.fit(x_train, y_train, epochs=c_epochs_number, batch_size=c_batches_number, verbose=c_verbose)
 
-        self.c_model_statistics = [model_fitted.history["accuracy"], model_fitted.history["loss"]]
+        self.c_model_statistics_train.append([model_fitted.history["accuracy"], model_fitted.history["loss"]])
+
+
+    def predict_model(self, c_x):
+        self.c_predicts.append(self.model.predict(c_x))
 
 
     def evaluate_model(self):
         model_evaluated = self.model.evaluate(self.c_x_test, self.c_y_test)
 
-        self.c_model_scores = model_evaluated
+        self.c_model_scores_train.append(model_evaluated)
